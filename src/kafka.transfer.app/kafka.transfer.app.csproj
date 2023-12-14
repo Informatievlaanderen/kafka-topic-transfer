@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Kafka.Transfer.App</RootNamespace>
+        <Company>Yusuf Mavzer</Company>
+        <Product>Kafka.Transfer.App</Product>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="appsettings.json" CopyToOutputDirectory="Always" />
+        <Content Include="appsettings.*.json" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

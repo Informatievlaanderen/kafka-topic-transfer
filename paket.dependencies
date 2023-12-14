@@ -1,0 +1,48 @@
+framework: net8.0
+strategy: min
+source https://api.nuget.org/v3/index.json
+
+//Kafka
+nuget Confluent.Kafka 2.3.0
+
+//Serializers
+nuget MessagePack 2.5.129
+nuget Newtonsoft.Json 13.0.3
+
+//Node Engine
+nuget Jering.Javascript.NodeJS 7.0.0
+nuget JavaScriptEngineSwitcher.Core 3.21.0
+nuget JavaScriptEngineSwitcher.Extensions.MsDependencyInjection 3.21.0
+nuget JavaScriptEngineSwitcher.Node 3.23.1
+
+//Logging
+nuget Serilog 2.10.0
+nuget Serilog.Settings.Configuration 3.3.0
+nuget Serilog.Extensions.Logging 3.1.0
+nuget Serilog.Sinks.Console 4.0.1
+nuget Serilog.Sinks.File 5.0.0
+nuget Serilog.Enrichers.Thread 3.1.0
+nuget Serilog.Enrichers.Environment 2.2.0
+nuget Serilog.Formatting.Compact 1.1.0
+
+
+//Infra
+nuget Microsoft.Extensions.FileProviders.Physical 8.0.0
+nuget Microsoft.Extensions.Configuration 8.0.0
+nuget Microsoft.Extensions.Configuration.Abstractions 8.0.0
+nuget Microsoft.Extensions.Logging 8.0.0
+nuget Microsoft.Extensions.Logging.Configuration 8.0.0
+nuget Microsoft.Extensions.Logging.Debug 8.0.0
+nuget Microsoft.Extensions.DependencyInjection 8.0.0
+nuget Microsoft.Extensions.Hosting 8.0.0
+nuget Microsoft.Extensions.Hosting.Abstractions 8.0.0
+nuget Microsoft.Extensions.Options 8.0.0
+nuget Microsoft.Extensions.Options.ConfigurationExtensions 8.0.0
+nuget Microsoft.Extensions.DependencyModel 8.0.0
+
+// Api
+nuget Microsoft.AspNetCore.OpenApi 8.0.0
+
+// Build stuff
+nuget SourceLink.Embed.AllSourceFiles 2.8.3 copy_local: true
+nuget SourceLink.Copy.PdbFiles 2.8.3 copy_local: true
