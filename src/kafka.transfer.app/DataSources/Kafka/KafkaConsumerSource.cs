@@ -1,7 +1,7 @@
 using Confluent.Kafka;
-using MessagePack;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+
 
 namespace Kafka.Transfer.App.DataSources.Kafka;
 
@@ -11,9 +11,14 @@ public sealed class KafkaConsumerSource : IDataSource<ConsumeResult<string, stri
     private readonly KafkaConsumerSourceOptions kafkaConsumerSourceOptions;
     private readonly IConsumer<string, string> _consumer;
     private long lastOffsetValue = -1001L;
+    private readonly ILogger<KafkaConsumerSource> _logger;
 
-    public KafkaConsumerSource(IOptions<KafkaConsumerSourceOptions> kafkaConsumerSourceOptions)
+    public KafkaConsumerSource(
+        IOptions<KafkaConsumerSourceOptions> kafkaConsumerSourceOptions,
+        ILoggerFactory loggerFactory)
     {
+        
+        _logger = loggerFactory.CreateLogger<KafkaConsumerSource>();
         this.kafkaConsumerSourceOptions = kafkaConsumerSourceOptions.Value;
         _consumer = this.kafkaConsumerSourceOptions.CreateConsumerConfig()
             .BuildConsumer(this.kafkaConsumerSourceOptions);
@@ -22,7 +27,7 @@ public sealed class KafkaConsumerSource : IDataSource<ConsumeResult<string, stri
     public IEnumerable<DataRecord<ConsumeResult<string, string>, byte[]>> Iter(CancellationToken cancellationToken)
     {
         _consumer.Subscribe(kafkaConsumerSourceOptions.Topic);
-        Console.WriteLine($"Subscribed to {kafkaConsumerSourceOptions.Topic}");
+        _logger.LogInformation($"Subscribed to {kafkaConsumerSourceOptions.Topic}");
         while (!cancellationToken.IsCancellationRequested)
         {
             ConsumeResult<string, string> consumeResult;
@@ -32,8 +37,7 @@ public sealed class KafkaConsumerSource : IDataSource<ConsumeResult<string, stri
             }
             catch (OperationCanceledException ex)
             {
-                Console.WriteLine("Something went wrong...");
-                Console.WriteLine(ex.Message);
+                _logger.LogCritical("Something went wrong...\n {ex.Message}", ex);
                 yield break;
             }
 
@@ -47,16 +51,10 @@ public sealed class KafkaConsumerSource : IDataSource<ConsumeResult<string, stri
             {
                 RawMessage = consumeResult,
             };
-            // Console.WriteLine($"Offset {consumeResult.Offset.Value} posted.");
-            // if (consumeResult.Offset.Value % kafkaConsumerSourceOptions.PauseTriggerMessageCount == 0)
-            // {
-            //     //wait one sec per thousand
-            //     Thread.Sleep(kafkaConsumerSourceOptions.PauseTriggerInterval);
-            // } 
             yield return dataRecord;
         }
 
-        Console.WriteLine("Unsubscribing...");
+        _logger.LogInformation("Unsubscribing...");
         _consumer.Unsubscribe();
     }
 

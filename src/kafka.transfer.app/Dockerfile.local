@@ -1,17 +1,15 @@
 FROM mcr.microsoft.com/dotnet/runtime:8.0.0
 
-# create work dir and set permissions as WORKDIR sets permissions as root
-RUN mkdir /app && chown -R app:app /app
+RUN addgroup --gid 1000 --system user1 && adduser --uid 1000 -system user1 --gid 1000
+RUN mkdir /app && chown -R user1:user1 /app
 WORKDIR /app
 
 LABEL maintainer "Digitaal Vlaanderen <digitaal.vlaanderen@vlaanderen.be>"
-LABEL description="kafka-transfer copy messages from one topic to another."
+LABEL description="kafka-topic-transfer copies messages from one topic to another."
 
-COPY /bin/Release/net8.0/* /app
-
-WORKDIR /app
-RUN rm /app/appsettings.*.json
+COPY /bin/Release/net8.0/ /app
+RUN rm -f /app/appsettings.*.json
 
 VOLUME ["/app/appsettings.json"]
 
-ENTRYPOINT ["/app/kafka.transfer.app"]
+ENTRYPOINT ["dotnet", "/app/kafka.transfer.app.dll"]

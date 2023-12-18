@@ -66,16 +66,18 @@ public class Program
         {
             var cancellationToken = host.Services.GetRequiredService<CancellationTokenSource>();
             var task = host.RunAsync(cancellationToken.Token);
+            logger.LogInformation("Starting kafka.topic.transfer");
             Console.WriteLine("Press any key to exist");
             Console.ReadKey(true);
             cancellationToken.Cancel();
             Console.WriteLine("Shutdown requested!");
-            // await task;
+            await task;
             while (task.Status != TaskStatus.RanToCompletion)
             {
                 await Task.Delay(300);
             }
-            Console.WriteLine("Bye bye!");
+
+            logger.LogInformation("Bye bye!");
         }
         catch (AggregateException aggregateException)
         {

@@ -3,6 +3,7 @@ using Kafka.Transfer.App.DataSources;
 using Kafka.Transfer.App.DataTarget;
 using Kafka.Transfer.App.OffsetHandlers;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Kafka.Transfer.App.Processors;
 
@@ -15,6 +16,7 @@ public abstract class BaseProcessor<T> : BackgroundService
     protected BaseProcessor(
         IDataSource<T> source,
         IDataTarget target,
+        ILoggerFactory loggerFactory,
         CancellationTokenSource cancellationTokenSource,
         int sourceBoundedCapacity = 1000,
         int targetBoundedCapacity = 1000)
@@ -23,7 +25,7 @@ public abstract class BaseProcessor<T> : BackgroundService
 
         _source = new DataSourceBlock<T>(source, targetBoundedCapacity, _cancellationTokenSource);
         IOffsetManager<T> offsetManager = new OffsetManager<T>(_source.OffsetHandler);
-        _target = new DataTargetBlock<T>(target, sourceBoundedCapacity, offsetManager, _cancellationTokenSource);
+        _target = new DataTargetBlock<T>(target, sourceBoundedCapacity, offsetManager, loggerFactory, _cancellationTokenSource);
         var linkOptions = new DataflowLinkOptions { PropagateCompletion = false };
         _source.LinkTo(_target, linkOptions);
     }

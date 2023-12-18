@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 namespace Kafka.Transfer.App.DataTarget.Kafka;
 
@@ -9,9 +10,11 @@ public sealed class KafkaTarget : IDataTarget
     private readonly  KafkaTargetOptions _options;
     private readonly IProducer<string, string> _producer;
     private readonly DateTime? _lastMessageConsumed;
+    private readonly ILogger<KafkaTarget> _logger;
 
-    public KafkaTarget(IOptions<KafkaTargetOptions> targetOptions)
+    public KafkaTarget(IOptions<KafkaTargetOptions> targetOptions, ILoggerFactory loggerFactory)
     {
+        _logger = loggerFactory.CreateLogger<KafkaTarget>();
         _lastMessageConsumed = DateTime.UtcNow;
         _httpClient = new HttpClient();
         _options = targetOptions.Value;
@@ -36,17 +39,17 @@ public sealed class KafkaTarget : IDataTarget
             
             if (_options.UseSinglePartition)
             {
-                _ = await _producer.ProduceAsync(new TopicPartition(_options.Topic, new Partition(0)),
+                _ = _producer.ProduceAsync(new TopicPartition(_options.Topic, new Partition(0)),
                     new Message<string, string> { Key = key, Value = message }, cancellationToken);
             }
             else
             {
-                _ = await _producer.ProduceAsync(_options.Topic, new Message<string, string> { Key = key, Value = message }, cancellationToken);
+                _ = _producer.ProduceAsync(_options.Topic, new Message<string, string> { Key = key, Value = message }, cancellationToken);
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogCritical(e.Message, e);
             throw;
         }
     }

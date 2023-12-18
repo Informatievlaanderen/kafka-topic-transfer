@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Kafka.Transfer.App.TaskSchedulers;
 
 public class DataSourceTaskScheduler : TaskScheduler
@@ -6,7 +8,9 @@ public class DataSourceTaskScheduler : TaskScheduler
     private readonly int _taskThreshold;
     private int _tasksProcessed;
 
-    public DataSourceTaskScheduler(int maxDegreeOfParallelism, int taskThreshold)
+    public DataSourceTaskScheduler(
+        int maxDegreeOfParallelism, 
+        int taskThreshold)
     {
         if (maxDegreeOfParallelism < 1 || taskThreshold < 1)
             throw new ArgumentOutOfRangeException();

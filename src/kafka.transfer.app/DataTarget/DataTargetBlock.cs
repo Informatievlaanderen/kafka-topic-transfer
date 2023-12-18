@@ -1,7 +1,7 @@
 using System.Threading.Tasks.Dataflow;
 using Confluent.Kafka;
 using Kafka.Transfer.App.OffsetHandlers;
-using MessagePack;
+using Microsoft.Extensions.Logging;
 
 namespace Kafka.Transfer.App.DataTarget;
 
@@ -11,11 +11,13 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
     private readonly BufferBlock<DataRecord<T,byte[]>> _bufferBlock;
     private readonly CancellationTokenSource _cancellationToken;
     private readonly  IOffsetManager<T> _offsetManager;
+    private readonly ILogger<DataTargetBlock<T>> _logger;
     
     public DataTargetBlock (
         IDataTarget target,
         int? boundedCapacity,
         IOffsetManager<T> offsetManager,
+        ILoggerFactory loggerFactory,
         CancellationTokenSource cancellationToken)
     {
         _target = target;
@@ -26,6 +28,7 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             BoundedCapacity = boundedCapacity ?? 1000,
             CancellationToken = cancellationToken.Token,
         });
+        _logger = loggerFactory.CreateLogger<DataTargetBlock<T>>();
     }
 
     public async Task Start()
@@ -36,7 +39,7 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             var rawMessage = block.RawMessage as ConsumeResult<string, string>;
             
             //Observer sent -> 
-            Console.WriteLine($"Publishing consumed message with offset {rawMessage!.TopicPartitionOffset.Offset}");
+            _logger.LogInformation("Publishing consumed message with offset {Offset}", rawMessage!.TopicPartitionOffset.Offset);
 
             await _target.Publish(rawMessage, _cancellationToken.Token);
             _offsetManager.OnNext(block.RawMessage);
@@ -44,7 +47,7 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             //No more messages in the queue
             if (_bufferBlock.Count == 0)
             {
-                Console.WriteLine("All messages are consumed and published");
+                _logger.LogInformation("All messages in TPL queue are consumed and published");
             }
         }
     }
@@ -69,7 +72,7 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
 
     public void Fault(Exception exception)
     {
-        Console.WriteLine($"Error in target block: {exception}");
+        _logger.LogCritical("Error in target block: {Exception}", exception);
         var bufferBlock = (ITargetBlock<DataRecord<T,byte[]>>)_bufferBlock;
         bufferBlock.Fault(exception);
     }
