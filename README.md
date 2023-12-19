@@ -2,6 +2,8 @@
 
 *This tool simplifies the process of copying messages from one Kafka topic to another (cross environment & cluster).*
 
+![Illustration](illustration.png)
+
 ## Prerequisite
   - DotNet SDK 8.0
   - Docker
