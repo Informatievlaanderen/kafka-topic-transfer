@@ -63,9 +63,16 @@ The configuration file, `appsettings.json`, must be provided through a `volume m
 Execute the `30_run-container.sh` script or use the standard Docker run command. The script includes the `--rm` flag to automatically remove the container upon completion.
 
 ```sh
+
+# Linux/ MacOs
 $ ./30_run-container.sh ./src/kafka.transfer.app/appsettings.linux.json
-#OR
-$ docker run -it --rm -v "${APPSETTINGS_PATH}:/app/appsettings.json" ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.1
+
+# Windows
+$ ./30_run-container.sh "C:\APPSETTINGS_PATH\appsettings.MACHINENAME.json"
+
+
+# OR
+$ docker run -it --rm -v "ABSOLUTE_APPSETTINGS_PATH:/app/appsettings.json" ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.2
 ```
 
 ## Running with Docker-Compose
@@ -81,7 +88,7 @@ networks:
 
 services:
   basisregisters.kafka-topic-transfer:
-    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.1
+    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.2
     container_name: basisregisters.kafka-topic-transfer
     volumes:
       - "/home/yusuf/repos/fork/kafka-transfer/src/kafka.transfer.app/appsettings.linux.json:/app/appsettings.json"

@@ -39,15 +39,18 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             var rawMessage = block.RawMessage as ConsumeResult<string, string>;
             
             //Observer sent -> 
-            _logger.LogInformation("Publishing consumed message with offset {Offset}", rawMessage!.TopicPartitionOffset.Offset);
-
+            var offset = rawMessage!.TopicPartitionOffset.Offset.Value;
+            var logLevel = offset % 1000L == 0 ? LogLevel.Information : LogLevel.Debug;
+            _logger.Log(logLevel, $"Publishing consumed message with offset {offset}");
+            
             await _target.Publish(rawMessage, _cancellationToken.Token);
             _offsetManager.OnNext(block.RawMessage);
             
             //No more messages in the queue
             if (_bufferBlock.Count == 0)
             {
-                _logger.LogInformation("All messages in TPL queue are consumed and published");
+                _logger.LogInformation("All messages in TPL queue are consumed and published. \nWaiting for messages from consumer.");
+                _logger.LogInformation($"Current offset: {offset}");
             }
         }
     }
