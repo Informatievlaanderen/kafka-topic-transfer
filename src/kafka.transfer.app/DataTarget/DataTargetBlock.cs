@@ -12,16 +12,19 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
     private readonly CancellationTokenSource _cancellationToken;
     private readonly  IOffsetManager<T> _offsetManager;
     private readonly ILogger<DataTargetBlock<T>> _logger;
+    private readonly DataTargetTaskChainer _taskChainer;
     
     public DataTargetBlock (
         IDataTarget target,
         int? boundedCapacity,
         IOffsetManager<T> offsetManager,
+        DataTargetTaskChainer taskChainer,
         ILoggerFactory loggerFactory,
         CancellationTokenSource cancellationToken)
     {
         _target = target;
         _offsetManager = offsetManager;
+        _taskChainer = taskChainer;
         _cancellationToken = cancellationToken;
         _bufferBlock = new BufferBlock<DataRecord<T,byte[]>>(new ExecutionDataflowBlockOptions()
         {
@@ -42,9 +45,11 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             var offset = rawMessage!.TopicPartitionOffset.Offset.Value;
             var logLevel = offset % 1000L == 0 ? LogLevel.Information : LogLevel.Debug;
             _logger.Log(logLevel, $"Publishing consumed message with offset {offset}");
-            
-            await _target.Publish(rawMessage, _cancellationToken.Token);
-            _offsetManager.OnNext(block.RawMessage);
+
+            var t = _target.Publish(rawMessage, _cancellationToken.Token)
+                .ContinueWith(t => _offsetManager.OnNext(block.RawMessage),
+                    TaskContinuationOptions.ExecuteSynchronously);
+            _taskChainer.AddToChain(offset, t);
             
             //No more messages in the queue
             if (_bufferBlock.Count == 0)

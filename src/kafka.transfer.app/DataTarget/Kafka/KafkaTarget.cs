@@ -7,18 +7,20 @@ public sealed class KafkaTarget : IDataTarget
 {
     private bool disposed = false;
     private readonly HttpClient _httpClient;
-    private readonly  KafkaTargetOptions _options;
+    private readonly KafkaTargetOptions _options;
     private readonly IProducer<string, string> _producer;
     private readonly DateTime? _lastMessageConsumed;
     private readonly ILogger<KafkaTarget> _logger;
 
-    public KafkaTarget(IOptions<KafkaTargetOptions> targetOptions, ILoggerFactory loggerFactory)
+    public KafkaTarget(
+        IOptions<KafkaTargetOptions> targetOptions,
+        ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<KafkaTarget>();
         _lastMessageConsumed = DateTime.UtcNow;
         _httpClient = new HttpClient();
         _options = targetOptions.Value;
-
+        
         var producerConfig = _options.CreateProduceConfig();
         _producer = new ProducerBuilder<string, string>(producerConfig)
             .SetKeySerializer(Serializers.Utf8)
@@ -26,7 +28,7 @@ public sealed class KafkaTarget : IDataTarget
             .Build();
     }
 
-    public async Task Publish(ConsumeResult<string,string> rawMessage, CancellationToken cancellationToken)
+    public async Task Publish(ConsumeResult<string, string> rawMessage, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -36,16 +38,12 @@ public sealed class KafkaTarget : IDataTarget
         {
             var message = rawMessage.Message.Value;
             var key = rawMessage.Message.Key;
-            
-            if (_options.UseSinglePartition)
-            {
-                _ = _producer.ProduceAsync(new TopicPartition(_options.Topic, new Partition(0)),
-                    new Message<string, string> { Key = key, Value = message }, cancellationToken);
-            }
-            else
-            {
-                _ = _producer.ProduceAsync(_options.Topic, new Message<string, string> { Key = key, Value = message }, cancellationToken);
-            }
+
+            var partition = _options.UseSinglePartition ? new Partition(0) : Partition.Any;
+            await _producer.ProduceAsync(
+                new TopicPartition(_options.Topic, partition),
+                new Message<string, string> { Key = key, Value = message },
+                cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {

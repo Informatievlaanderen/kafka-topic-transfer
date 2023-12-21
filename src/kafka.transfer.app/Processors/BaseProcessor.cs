@@ -16,6 +16,7 @@ public abstract class BaseProcessor<T> : BackgroundService
     protected BaseProcessor(
         IDataSource<T> source,
         IDataTarget target,
+        DataTargetTaskChainer taskChainer,
         ILoggerFactory loggerFactory,
         CancellationTokenSource cancellationTokenSource,
         int sourceBoundedCapacity = 1000,
@@ -25,7 +26,7 @@ public abstract class BaseProcessor<T> : BackgroundService
 
         _source = new DataSourceBlock<T>(source, targetBoundedCapacity, _cancellationTokenSource);
         IOffsetManager<T> offsetManager = new OffsetManager<T>(_source.OffsetHandler);
-        _target = new DataTargetBlock<T>(target, sourceBoundedCapacity, offsetManager, loggerFactory, _cancellationTokenSource);
+        _target = new DataTargetBlock<T>(target, sourceBoundedCapacity, offsetManager, taskChainer, loggerFactory, _cancellationTokenSource);
         var linkOptions = new DataflowLinkOptions { PropagateCompletion = false };
         _source.LinkTo(_target, linkOptions);
     }

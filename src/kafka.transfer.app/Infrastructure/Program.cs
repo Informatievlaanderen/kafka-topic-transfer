@@ -1,4 +1,5 @@
 ﻿using Kafka.Transfer.App.DataSources.Kafka;
+using Kafka.Transfer.App.DataTarget;
 using Kafka.Transfer.App.DataTarget.Kafka;
 using Kafka.Transfer.App.Processors;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +50,7 @@ public class Program
             {
                 services
                     .AddSingleton(i => new CancellationTokenSource())
+                    .AddSingleton<DataTargetTaskChainer>()
                     .Configure<KafkaConsumerSourceOptions>(
                         hostContext.Configuration.GetSection(nameof(KafkaConsumerSourceOptions)))
                     .Configure<KafkaTargetOptions>(
