@@ -74,7 +74,7 @@ $ ./30_run-container.sh "C:\APPSETTINGS_PATH\appsettings.MACHINENAME.json"
 
 
 # OR
-$ docker run -it --rm -v "ABSOLUTE_APPSETTINGS_PATH:/app/appsettings.json" ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.3
+$ docker run -it --rm -v "ABSOLUTE_APPSETTINGS_PATH:/app/appsettings.json" ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.4
 ```
 
 ## Running with Docker-Compose
@@ -90,7 +90,7 @@ networks:
 
 services:
   basisregisters.kafka-topic-transfer:
-    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.3
+    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.4
     container_name: basisregisters.kafka-topic-transfer
     volumes:
       - "/home/yusuf/repos/fork/kafka-transfer/src/kafka.transfer.app/appsettings.linux.json:/app/appsettings.json"

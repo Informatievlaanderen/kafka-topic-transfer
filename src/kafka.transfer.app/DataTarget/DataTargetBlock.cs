@@ -46,9 +46,11 @@ public class DataTargetBlock<T> : ITargetBlock<DataRecord<T,byte[]>>
             var logLevel = offset % 1000L == 0 ? LogLevel.Information : LogLevel.Debug;
             _logger.Log(logLevel, $"Publishing consumed message with offset {offset}");
 
-            var t = _target.Publish(rawMessage, _cancellationToken.Token)
-                .ContinueWith(t => _offsetManager.OnNext(block.RawMessage),
-                    TaskContinuationOptions.ExecuteSynchronously);
+            var t = 
+                _target.Publish(rawMessage, _cancellationToken.Token)
+                     .ContinueWith(t => _offsetManager.OnNext(block.RawMessage),
+                    TaskContinuationOptions.RunContinuationsAsynchronously);
+
             _taskChainer.AddToChain(offset, t);
             
             //No more messages in the queue

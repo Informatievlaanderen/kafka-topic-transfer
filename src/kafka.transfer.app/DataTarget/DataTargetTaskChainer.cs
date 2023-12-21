@@ -46,7 +46,7 @@ public class DataTargetTaskChainer
             while (true)
             {
                 expectedNextOffset = _currentOffset + 1;
-                Thread.Sleep(TimeSpan.FromMilliseconds(10));
+                Thread.Sleep(TimeSpan.FromMilliseconds(1));
                 if (expectedNextOffset == offset)
                 {
                     break;
@@ -54,7 +54,7 @@ public class DataTargetTaskChainer
             }
         }
         
-        _currentTask!.ContinueWith(t => { 
+        _currentTask!.ContinueWith(_ => {
             _currentOffset = offset;
             return task;
         }, TaskContinuationOptions.RunContinuationsAsynchronously);
