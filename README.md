@@ -90,7 +90,7 @@ networks:
 
 services:
   basisregisters.kafka-topic-transfer:
-    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.4
+    image: ghcr.io/informatievlaanderen/kafka-topic-transfer:0.0.5
     container_name: basisregisters.kafka-topic-transfer
     volumes:
       - "/home/yusuf/repos/fork/kafka-transfer/src/kafka.transfer.app/appsettings.linux.json:/app/appsettings.json"
