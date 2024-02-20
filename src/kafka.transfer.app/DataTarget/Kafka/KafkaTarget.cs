@@ -38,11 +38,12 @@ public sealed class KafkaTarget : IDataTarget
         {
             var message = rawMessage.Message.Value;
             var key = rawMessage.Message.Key;
+            var headers = rawMessage.Message.Headers;
 
             var partition = _options.UseSinglePartition ? new Partition(0) : Partition.Any;
             await _producer.ProduceAsync(
                 new TopicPartition(_options.Topic, partition),
-                new Message<string, string> { Key = key, Value = message },
+                new Message<string, string> { Key = key, Value = message, Headers = headers },
                 cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
